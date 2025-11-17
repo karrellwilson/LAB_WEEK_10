@@ -1,12 +1,11 @@
-package com.example.lab_week_10.database // Pastikan package sesuai
+package com.example.lab_week_10.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
-// @Database mendefinisikan semua entity (tabel) dan versi database
-@Database(entities = [Total::class], version = 1)
+// UBAH VERSI DI SINI
+@Database(entities = [Total::class], version = 2)
 abstract class TotalDatabase : RoomDatabase() {
 
-    // Deklarasikan DAO agar bisa diakses
     abstract fun totalDao(): TotalDao
 }

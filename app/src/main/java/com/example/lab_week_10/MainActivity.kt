@@ -4,21 +4,21 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast // BARU: Import Toast
 import androidx.lifecycle.ViewModelProvider
-import androidx.room.Room // BARU: Import Room
-import com.example.lab_week_10.database.Total // BARU: Import Entity Total
-import com.example.lab_week_10.database.TotalDatabase // BARU: Import Database
+import androidx.room.Room
+import com.example.lab_week_10.database.Total
+import com.example.lab_week_10.database.TotalDatabase
+import com.example.lab_week_10.database.TotalObject // BARU: Import TotalObject
 import com.example.lab_week_10.viewmodels.TotalViewModel
+import java.util.Date // BARU: Import Date untuk timestamp
 
 class MainActivity : AppCompatActivity() {
 
-    // BARU: Buat ID unik untuk data kita (Langkah 13)
-    // Kita hanya akan punya 1 baris di tabel, dengan ID = 1
     companion object {
         const val ID: Long = 1
     }
 
-    // BARU: Inisialisasi Database 'by lazy' (Langkah 11)
     private val db by lazy {
         prepareDatabase()
     }
@@ -27,23 +27,36 @@ class MainActivity : AppCompatActivity() {
         ViewModelProvider(this)[TotalViewModel::class.java]
     }
 
+    // BARU: Tambahkan variabel untuk menyimpan tanggal terakhir
+    private var lastUpdateDate: String = "Never"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // BARU: Ambil nilai awal dari database (Langkah 12)
         initializeValueFromDatabase()
-
-        // Siapkan ViewModel (ini sudah ada sebelumnya)
         prepareViewModel()
     }
 
-    // BARU: Fungsi untuk menyimpan data ke DB saat app di-pause (Langkah 15)
+    // BARU: Tampilkan Toast saat Activity dimulai (Langkah Bonus)
+    override fun onStart() {
+        super.onStart()
+        Toast.makeText(this, lastUpdateDate, Toast.LENGTH_LONG).show()
+    }
+
     override fun onPause() {
         super.onPause()
-        // Ambil nilai terakhir dari ViewModel dan update database
-        // Kita gunakan '!!' (non-null assertion) sesuai modul
-        db.totalDao().update(Total(ID, viewModel.total.value!!))
+
+        // UPDATE: Buat TotalObject baru dengan nilai & tanggal saat ini
+        db.totalDao().update(
+            Total(
+                ID,
+                TotalObject(
+                    value = viewModel.total.value!!,
+                    date = Date().toString() // Dapatkan tanggal & waktu saat ini
+                )
+            )
+        )
     }
 
     private fun updateText(total: Int) {
@@ -61,32 +74,37 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // BARU: Fungsi untuk membangun instance database (Langkah 13)
     private fun prepareDatabase(): TotalDatabase {
         return Room.databaseBuilder(
             applicationContext,
             TotalDatabase::class.java,
-            "total-database" // Nama file database
+            "total-database"
         )
-            // .allowMainThreadQueries() HANYA untuk simplisitas di modul ini
-            // Idealnya, operasi database harus di background thread
             .allowMainThreadQueries()
+            // BARU: Tambahkan ini
+            // Ini akan menghapus DB lama (v1) dan membuat baru (v2)
+            // Ini adalah cara mudah untuk menangani migrasi di lab
+            .fallbackToDestructiveMigration()
             .build()
     }
 
-    // BARU: Fungsi untuk mengambil data dari DB (Langkah 13)
     private fun initializeValueFromDatabase() {
-        // Ambil data dengan ID = 1
         val total = db.totalDao().getTotal(ID)
 
         if (total.isEmpty()) {
-            // Jika database kosong (pertama kali app dibuka),
-            // masukkan data baru dengan total = 0
-            db.totalDao().insert(Total(id = ID, total = 0))
+            // UPDATE: Masukkan TotalObject baru saat pertama kali
+            val initialDate = Date().toString()
+            db.totalDao().insert(
+                Total(
+                    id = ID,
+                    total = TotalObject(value = 0, date = initialDate)
+                )
+            )
+            lastUpdateDate = initialDate
         } else {
-            // Jika data ada, setel nilai ViewModel
-            // dengan data dari database
-            viewModel.setTotal(total.first().total)
+            // UPDATE: Ambil nilai dari .total.value dan tanggal dari .total.date
+            viewModel.setTotal(total.first().total.value)
+            lastUpdateDate = total.first().total.date
         }
     }
 }
