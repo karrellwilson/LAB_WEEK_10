@@ -11,14 +11,17 @@ class TotalViewModel : ViewModel() {
         get() = _total
 
     init {
-        // postValue digunakan untuk update dari background thread.
-        // .value digunakan untuk update dari main thread.
-        // Di sini, keduanya berfungsi, tapi kita ikuti modul.
         _total.postValue(0)
     }
 
     fun incrementTotal() {
-        // Gunakan postValue()
         _total.postValue((_total.value ?: 0) + 1)
     }
+
+    // --- TAMBAHKAN FUNGSI INI (Langkah 14) ---
+    // Untuk mengatur nilai total dari database saat aplikasi pertama kali dibuka
+    fun setTotal(newTotal: Int) {
+        _total.postValue(newTotal)
+    }
+    // -------------------------------------
 }

@@ -1,13 +1,15 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+
+    // TAMBAHKAN KAPT DI SINI
+    alias(libs.plugins.kotlin.kapt)
 }
 
 android {
     namespace = "com.example.lab_week_10"
-    compileSdk {
-        version = release(36)
-    }
+    // SAYA PERBAIKI INI (sebelumnya 'release(36)')
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.lab_week_10"
@@ -43,8 +45,16 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
+
+    // SAYA UBAH INI AGAR MENGGUNAKAN 'libs'
+    implementation(libs.lifecycle.viewmodel.ktx)
+    implementation(libs.lifecycle.livedata.ktx)
+
+    // --- DEPENDENSI ROOM DITAMBAHKAN DI SINI ---
+    implementation(libs.room.runtime)
+    kapt(libs.room.compiler)
+    // ----------------------------------------
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
