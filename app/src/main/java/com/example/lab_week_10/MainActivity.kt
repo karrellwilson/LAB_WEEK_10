@@ -10,9 +10,6 @@ import com.example.lab_week_10.viewmodels.TotalViewModel // Import ViewModel And
 class MainActivity : AppCompatActivity() {
 
     // Inisialisasi ViewModel menggunakan 'by lazy'
-    // 'by lazy' artinya ViewModel baru akan dibuat saat pertama kali diakses.
-    // ViewModelProvider akan mengambil ViewModel yang sudah ada jika terjadi rotasi,
-    // atau membuat yang baru jika belum ada.
     private val viewModel: TotalViewModel by lazy {
         ViewModelProvider(this)[TotalViewModel::class.java]
     }
@@ -35,17 +32,12 @@ class MainActivity : AppCompatActivity() {
     private fun prepareViewModel() {
 
         // 1. Mengamati (observe) LiveData
-        // Ini adalah inti dari LiveData. Blok kode di dalam { ... }
-        // akan otomatis berjalan SETIAP KALI data 'viewModel.total' berubah.
         viewModel.total.observe(this) { total ->
             // Saat data berubah, panggil updateText()
             updateText(total)
         }
 
         // 2. Menyiapkan tombol
-        // Saat tombol diklik, kita panggil fungsi 'incrementTotal()' di ViewModel.
-        // ViewModel akan mengubah data -> LiveData akan ter-update ->
-        // Observer di atas akan berjalan -> UI akan ter-update.
         findViewById<Button>(R.id.button_increment).setOnClickListener {
             viewModel.incrementTotal()
         }
